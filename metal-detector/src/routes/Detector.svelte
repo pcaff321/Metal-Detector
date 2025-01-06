@@ -109,7 +109,6 @@
 
 <script lang="ts">
     import explosion from '$lib/assets/explosion.mp3';
-  import { onMount } from 'svelte';
     import BrokenMachineContainer from './BrokenMachineContainer.svelte';
     import Needle from './Needle.svelte'
     

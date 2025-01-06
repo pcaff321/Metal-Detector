@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import Detector from "./Detector.svelte";
+  import TurnOnMachine from "./TurnOnMachine.svelte";
 
     let keyGiven = $state(false);
     let typedKey = $state("");
@@ -39,7 +39,7 @@
 </style>
 
 {#if keyGiven}
-    <Detector />
+    <TurnOnMachine />
 {:else}
 <div class="password-entry">
     <h1>Heeeelllllllloooooooooooooo please enter correct password:</h1>
