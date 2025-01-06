@@ -35,12 +35,6 @@ jobs:
         with:
           node-version: 18
           cache: 'npm'
-      - name: Show where we are 1
-        run: ls
-      - name: Go into project folder
-        run: cd metal-detector
-      - name: Show where we are 2
-        run: ls
       - name: Install dependencies
         run: npm install
       - name: Build
