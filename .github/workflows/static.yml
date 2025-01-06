@@ -37,6 +37,8 @@ jobs:
           cache: 'npm'
       - name: Go into project folder
         run: cd metal-detector
+      - name: Show where we are
+        run: ls
       - name: Install dependencies
         run: npm install
       - name: Build
