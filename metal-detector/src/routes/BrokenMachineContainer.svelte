@@ -84,11 +84,11 @@
                 mask-repeat: no-repeat;
         -webkit-mask-position: bottom;
                 mask-position: bottom;
-        animation: 3s ease 0s infinite beat;
     }
 
     .heart:hover {
         filter: brightness(85%);
+        animation: 3s ease 0s infinite beat;
     }
 
     .heart:active {
