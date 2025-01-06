@@ -17,6 +17,7 @@
       justify-content: center;
       bottom: 0;
       z-index: 50;
+      scale: 1.2;
     }
 
     .shakeContainer {
@@ -81,10 +82,10 @@
   
     .needle {
       position: absolute;
-      bottom: 0;
+      bottom: 10px;
       left: 50%;
       width: 2px;
-      height: 90px;
+      height: 85px;
       background: rgb(233, 131, 131);
       transform-origin: bottom center;
       transform: rotate(-90deg);
