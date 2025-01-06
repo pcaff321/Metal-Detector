@@ -45,7 +45,7 @@ jobs:
         run: |
           set -x
           npm run build
-          ls -l ./dist
+          ls -l
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
