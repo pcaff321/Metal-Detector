@@ -80,13 +80,7 @@
     .detector {
         position: absolute;
         display: block;
-        /* background: red; */
-        /* border: 1px solid black; */
-        /* box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); */
         z-index: 100;
-        /* border-radius: 100%; */
-        /* height: 12px;
-        width: 12px; */
         margin: 0;
 
         --rotation: 40deg;
@@ -117,7 +111,6 @@
     import explosion from '$lib/assets/explosion.mp3';
     import BrokenMachineContainer from './BrokenMachineContainer.svelte';
     import Needle from './Needle.svelte'
-    import { onMount } from 'svelte';
     
     const getRandomInteger = (min: number, max: number) => {
         min = Math.ceil(min)
@@ -140,8 +133,15 @@
     const MIN_INTERVAL = 120;
     const MAX_INTERVAL = 1200;
 
-    const divLeft = $derived(getRandomInteger(0, innerWidth - divWidth));
-    const divTop = $derived(getRandomInteger(20, innerHeight - divHeight));
+    let divLeft = $state(-1000);
+    let divTop = $state(-1000);
+
+    $effect(() => {
+        if (!exploded){
+            divLeft = getRandomInteger(0, innerWidth - divWidth);
+            divTop = getRandomInteger(20, innerHeight - divHeight);
+        }
+    });
 
     let cursorTop = $state(-50);
     let cursorLeft = $state(-50);
@@ -159,23 +159,26 @@
     }
 
     $effect(() => {
-        const hearts = document.getElementsByClassName('heart');
+        
+        if (!exploded) {
+            const hearts = document.getElementsByClassName('heart');
 
-        for (let i = 0; i < hearts.length; i++) {
-            const heart = hearts[i] as HTMLElement;
+            for (let i = 0; i < hearts.length; i++) {
+                const heart = hearts[i] as HTMLElement;
 
-            const minusMultiplyer = (i % 2 == 0 ? -1 : 1);
-            const startDifference = 150 * minusMultiplyer;
-            const endDifference = 300 * minusMultiplyer;
+                const minusMultiplyer = (i % 2 == 0 ? -1 : 1);
+                const startDifference = 150 * minusMultiplyer;
+                const endDifference = 300 * minusMultiplyer;
 
-            heart.style.setProperty('--animation-duration-var', `${Math.max(3, Math.random() * 10)}s`);
-            heart.style.setProperty('--low-opacity', `${Math.random() / 2}`);
-            heart.style.setProperty('--high-opacity', `${Math.random() / 2}`);
-            heart.style.setProperty('--start-left', `${(Math.random() * innerWidth) - startDifference}px`);
-            heart.style.setProperty('--start-top', `${(Math.random() * innerHeight) - startDifference}px`);
-            heart.style.setProperty('--end-left', `${(Math.random() * innerWidth) + endDifference}px`);
-            heart.style.setProperty('--end-top', `${(Math.random() * innerHeight) + endDifference}px`);
-        };
+                heart.style.setProperty('--animation-duration-var', `${Math.max(3, Math.random() * 10)}s`);
+                heart.style.setProperty('--low-opacity', `${Math.random() / 2}`);
+                heart.style.setProperty('--high-opacity', `${Math.random() / 2}`);
+                heart.style.setProperty('--start-left', `${(Math.random() * innerWidth) - startDifference}px`);
+                heart.style.setProperty('--start-top', `${(Math.random() * innerHeight) - startDifference}px`);
+                heart.style.setProperty('--end-left', `${(Math.random() * innerWidth) + endDifference}px`);
+                heart.style.setProperty('--end-top', `${(Math.random() * innerHeight) + endDifference}px`);
+            };
+        }
     });
 
     const playBeep = () => {
@@ -213,7 +216,7 @@
     if (timeSinceLastBeep >= beep_interval) {
       playBeep();
       lastBeepTime = currentTime;
-      if (withinImage){
+      if (withinImage && beep_interval == MIN_INTERVAL){
         extremeBeepDuration += timeSinceLastBeep;
       } else {
         extremeBeepDuration = 0;
@@ -225,6 +228,20 @@
   
   const EXTREME_BEEP_DURATION_THRESHOLD = 5000;
 
+  function repair(e: Event) {
+    exploded = false;
+    extremeBeepDuration = 0;
+    divLeft = -50000;
+    divTop = -5000;
+    setBeepInterval(MAX_INTERVAL);
+    
+    const clientX = (e as MouseEvent).clientX;
+    const clientY = (e as MouseEvent).clientY;
+    if (clientX && clientY){
+        setTimeout(() => handleMousemove(e as MouseEvent));
+    }
+  }
+
   $effect(() => {
     if (extremeBeepDuration >= EXTREME_BEEP_DURATION_THRESHOLD && !exploded){
         exploded = true;
@@ -232,23 +249,6 @@
         cancelAnimationFrame(animationFrameId);
     }
   })
-
-
-
-    // $effect(() => {
-    //     const id = setInterval(() => {
-    //         if (audio !== undefined){ 
-    //             // audio.play();
-    //             // playBeep();
-    //             // audio.currentTime = 0;
-    //             // audio.play();
-    //         }
-    //     }, 100);
-
-    //     return () => {
-    //         clearInterval(id);
-    //     };
-    // });
     
     function setBeepInterval(interval: number){
         if (withinImage){
@@ -275,6 +275,14 @@
 
     let distanceVal = $state(10000)
 
+    function setCursorRotation(rotationVal: number) {
+        const cursorElement = document.getElementsByClassName("detector")[0] as HTMLElement;
+
+        if (cursorElement) {
+            cursorElement.style.setProperty("--rotation", `${rotationVal}deg`)
+        }
+    }
+
     function handleMousemove(e: MouseEvent) {
         const centerOfImageX = divLeft + divWidth / 2;
         const centerOfImageY = divTop + divHeight / 2;
@@ -285,23 +293,19 @@
         cursorLeft = clientX;
         cursorTop = clientY;
 
-        const cursorElement = document.getElementsByClassName("detector")[0] as HTMLElement;
-
-        if (cursorElement) {
-            cursorElement.style.setProperty("--rotation", `${calculateRotation(clientY, clientX, centerOfImageY, centerOfImageX)}deg`)
-        }
-
-
+        setCursorRotation(calculateRotation(clientY, clientX, centerOfImageY, centerOfImageX));
 
         setBeepInterval(distanceVal)
     }
 
-    onMount(() => {
-        lastBeepTime = performance.now();
-        animationFrameId = requestAnimationFrame(tick);
+    $effect(() => {
+        if (!exploded) {
+            lastBeepTime = performance.now();
+            animationFrameId = requestAnimationFrame(tick);
+        }
 
         return () => {
-        cancelAnimationFrame(animationFrameId);
+            cancelAnimationFrame(animationFrameId);
         };
     });
 </script>
@@ -312,7 +316,7 @@
 <!-- svelte-ignore a11y_mouse_events_have_key_events -->
 <!-- svelte-ignore event_directive_deprecated -->
 {#if exploded}
-    <BrokenMachineContainer />
+    <BrokenMachineContainer {repair} />
 {:else}
 <div class="container {withinImage ? 'shakeContainerExtreme' : ''}" on:mousemove|preventDefault={handleMousemove}>
     <h1>
@@ -321,10 +325,8 @@
     <Needle needle_intensity={(1 - degree_of_closeness) * 100} withinImage={withinImage} />
     {#if innerWidth > 0}
     {#await import(`$lib/assets/sevgi${getRandomInteger(1, 7)}.png`) then { default: src }}
-    <!-- svelte-ignore a11y_img_redundant_alt -->
-    <img class="image" style:top={`${divTop}px`} style:left={`${divLeft}px`} {src} alt="Image" />
+    <img class="image" style="{exploded ? 'display: none' : ''}" style:top={`${divTop}px`} style:left={`${divLeft}px`} {src} alt="Cutie Pie" />
     {/await}
-    <!-- <div class="image" style:top={`${divTop}px`} style:left={`${divLeft}px`} style:height={`${divHeight}px`} style:width={`${divWidth}px`}>IMAGE</div> -->
     {/if}
 
     {#each { length: 169 }}
@@ -339,7 +341,3 @@
 {/if}
 
 <audio src={explosion} preload="auto" bind:this={explosionAudio}></audio>
-
-{#await import(`$lib/assets/sevgi${getRandomInteger(1, 7)}.png`) then { default: src }}
-  <img {src} alt="Cutie Pie" />
-{/await}
