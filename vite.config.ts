@@ -3,5 +3,5 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
 	plugins: [sveltekit()],
-	base: "/Metal-Detector/"
+	base: '/Metal-Detector/'
 });
